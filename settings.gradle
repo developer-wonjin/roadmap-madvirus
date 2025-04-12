@@ -1,1 +1,6 @@
-rootProject.name = 'demo'
+rootProject.name = 'roadmap-madvirus'
+include (
+        'tdd',
+        'ddd',
+        'design-pattern'
+)

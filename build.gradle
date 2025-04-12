@@ -1,11 +1,8 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.4.2'
-	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.springframework.boot' version '3.4.2'        apply false
+	id 'io.spring.dependency-management' version '1.1.7' apply false
 }
-
-group = 'com.example'
-version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
@@ -13,16 +10,59 @@ java {
 	}
 }
 
-repositories {
-	mavenCentral()
+// root Project를 포함한 모든 프로젝트에 적용되는 설정
+allprojects {
+	repositories {
+		mavenCentral()  // Maven Central repository 사용
+	}
 }
 
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+// root Project를 제외한 모든 subProject에 적용되는 설정
+subprojects {
+	// 각 서브프로젝트에 플러그인 적용
+	apply {
+		plugin 'java'
+		plugin 'java-library'
+		plugin 'io.spring.dependency-management'
+		plugin 'org.springframework.boot'
+	}
+
+	configurations {
+		compileOnly {
+			extendsFrom annotationProcessor  // compileOnly에서 annotationProcessor를 상속받음
+		}
+	}
+
+	dependencies {
+
+		implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+		runtimeOnly 'com.h2database:h2'
+//		implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.7' //스프링부트2
+		implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0' //스프링부트3
+
+		// Lombok 의존성 추가
+		compileOnly 'org.projectlombok:lombok'
+		annotationProcessor 'org.projectlombok:lombok'
+
+		// 테스트 의존성 추가
+		testImplementation 'junit:junit:4.13.2'
+		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	}
+
+	// bootJar 태스크 비활성화 (Spring Boot jar 생성 비활성화)
+	tasks.named("bootJar") {
+		enabled = false
+	}
+
+	// jar 태스크 활성화
+	tasks.named("jar") {
+		enabled = true
+	}
+
+	// 테스트는 JUnit Platform 사용
+	tasks.named('test') {
+		useJUnitPlatform()
+	}
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
-}
